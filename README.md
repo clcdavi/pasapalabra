@@ -1,6 +1,6 @@
 # Pasapalabras Bíblico
 
-Juego de Pasapalabras con temática bíblica, diseñado para jugar en grupos. Funciona en cualquier celular desde el navegador.
+Juego de Pasapalabras con temática bíblica, diseñado para jugar en grupos. Funciona en cualquier celular desde el navegador. Diseño responsive optimizado para pantallas pequeñas.
 
 ## Cómo jugar
 
