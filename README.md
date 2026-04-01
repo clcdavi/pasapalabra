@@ -15,8 +15,8 @@ Juego de Pasapalabras con temática bíblica, diseñado para jugar en grupos. Fu
 
 ## Letras incluidas
 
-21 letras: A B C D E F G H I J L M N O P R S T U V Z
-(Se omiten K, Q, W, X, Y por no tener términos bíblicos en español)
+23 letras: A B C D E F G H I J L M N O P Q R S T U V W Z
+(Se omiten K, X e Y por no tener términos bíblicos en español)
 
 ## Jugar en línea
 
