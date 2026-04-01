@@ -15,8 +15,14 @@ Juego de Pasapalabras con temática bíblica, diseñado para jugar en grupos. Fu
 
 ## Letras incluidas
 
-23 letras: A B C D E F G H I J L M N O P Q R S T U V W Z
-(Se omiten K, X e Y por no tener términos bíblicos en español)
+26 letras: A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
+
+Todas las letras del abecedario español (sin Ñ). Las letras menos comunes usan términos del griego y hebreo bíblico:
+- **K** → Kerygma, Koinonía, Kyrios
+- **Q** → Querubín / Querubines
+- **W** → Yahweh
+- **X** → Xi-Ro (símbolo cristológico)
+- **Y** → Yetro, Yeshúa
 
 ## Jugar en línea
 
