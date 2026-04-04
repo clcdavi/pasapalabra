@@ -92,6 +92,27 @@ tr.cur-row td{background:#fff8e1;font-weight:700}
 .fs-name{font-weight:700}
 .fs-scores span{margin-left:6px;font-weight:700}
 .g{color:#43a047}.o{color:#ef6c00}.r{color:#e53935}
+
+/* ── FINAL ROUND ── */
+.final-round-badge{display:inline-block;background:#ef6c00;color:#fff;font-size:.72rem;font-weight:800;padding:2px 8px;border-radius:20px;margin-left:6px;vertical-align:middle}
+
+/* ── SUMMARY OVERLAY ── */
+.summary-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px}
+.summary-card{background:#fff;border-radius:16px;padding:22px;width:100%;max-width:440px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.summary-title{font-size:1.25rem;font-weight:900;color:#8B4513;text-align:center;margin-bottom:2px}
+.summary-sub{text-align:center;color:#888;font-size:.85rem;margin-bottom:16px}
+.summary-section{margin-bottom:14px}
+.summary-section h4{font-size:.82rem;font-weight:800;margin-bottom:8px;padding:5px 10px;border-radius:7px}
+.summary-section.correct h4{background:#e8f5e9;color:#2e7d32}
+.summary-section.wrong h4{background:#ffebee;color:#c62828}
+.summary-item{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px solid #f5f5f5;font-size:.85rem}
+.summary-item:last-child{border-bottom:none}
+.summary-letter{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.75rem;flex-shrink:0;margin-top:2px}
+.summary-letter.c{background:#43a047;color:#fff}
+.summary-letter.w{background:#e53935;color:#fff}
+.summary-answer{font-weight:800;color:#333;font-size:.9rem}
+.summary-question{color:#999;font-size:.78rem;margin-top:1px}
+.summary-divider{border:none;border-top:1px solid #f0f0f0;margin:14px 0}
 </style>
 </head>
 <body>
@@ -164,6 +185,17 @@ tr.cur-row td{background:#fff8e1;font-weight:700}
     <div id="final-scores"></div>
   </div>
   <button class="btn btn-gold" style="max-width:420px;margin:0 auto" onclick="reset()">Jugar de nuevo</button>
+</div>
+
+<!-- ══════════ SUMMARY OVERLAY ══════════ -->
+<div id="summary-overlay" class="summary-overlay" style="display:none">
+  <div class="summary-card">
+    <div class="summary-title" id="summary-title"></div>
+    <div class="summary-sub" id="summary-sub"></div>
+    <div id="summary-body"></div>
+    <hr class="summary-divider">
+    <button class="btn btn-gold" id="summary-continue-btn"></button>
+  </div>
 </div>
 
 <script>
@@ -367,6 +399,10 @@ function pendingCount(grp) {
   return LETTERS.filter(l => grp.states[l] === 'pending' || grp.states[l] === 'paso').length;
 }
 
+function hasPendingLetters(grp) {
+  return LETTERS.some(l => grp.states[l] === 'pending');
+}
+
 // ══════════════════════════════════════════
 //  SETUP
 // ══════════════════════════════════════════
@@ -436,9 +472,19 @@ function render() {
   const q = grp.questions[l];
   const pending = pendingCount(grp);
 
-  document.getElementById('cur-group-name').textContent = grp.name;
-  document.getElementById('cur-sub').textContent =
-    `Letra ${l}  •  ${pending} letra${pending !== 1 ? 's' : ''} pendiente${pending !== 1 ? 's' : ''}`;
+  const isFinalRound = !hasPendingLetters(grp);
+  const curSubEl = document.getElementById('cur-sub');
+
+  document.getElementById('cur-group-name').innerHTML =
+    grp.name + (isFinalRound ? ' <span class="final-round-badge">Ronda final</span>' : '');
+
+  if (isFinalRound) {
+    curSubEl.textContent = `Ronda final · Letra ${l} · ${pending} paso${pending !== 1 ? 's' : ''} pendiente${pending !== 1 ? 's' : ''}`;
+    curSubEl.style.color = '#ef6c00';
+  } else {
+    curSubEl.textContent = `Letra ${l}  •  ${pending} letra${pending !== 1 ? 's' : ''} pendiente${pending !== 1 ? 's' : ''}`;
+    curSubEl.style.color = '';
+  }
 
   document.getElementById('q-badge').textContent = l;
   document.getElementById('q-text').textContent = q.p;
@@ -447,7 +493,13 @@ function render() {
 
   // Show question card and action buttons (hidden when peeking)
   document.getElementById('q-card').style.display = '';
-  document.getElementById('action-btns').style.display = '';
+  const actionBtns = document.getElementById('action-btns');
+  actionBtns.style.display = '';
+  const pasoBtn = actionBtns.querySelector('.btn-orange');
+  if (pasoBtn) {
+    pasoBtn.style.display = isFinalRound ? 'none' : '';
+    actionBtns.style.gridTemplateColumns = isFinalRound ? '1fr 1fr' : '1fr 1fr 1fr';
+  }
 
   updateRosco(grp, grp.letterIdx);
   updateGroupTabs();
@@ -509,22 +561,74 @@ function answer(type) {
   else if (type === 'paso') { grp.states[l] = 'paso';  grp.paso++; }
   else                      { grp.states[l] = 'wrong'; grp.wrong++; }
 
+  const inFinalRound = !hasPendingLetters(grp);
   const next = findNextLetterIdx(grp);
 
-  if (type === 'correct') {
-    if (next === -1) {
-      grp.done = true;
-      switchGroup();
-    } else {
-      grp.letterIdx = next;
-      render(); // same group continues
-    }
+  if (next === -1) {
+    grp.done = true;
+    showGroupSummary(grp);
+    return;
+  }
+
+  grp.letterIdx = next;
+
+  if (type === 'correct' || inFinalRound) {
+    render(); // same group continues
   } else {
-    // paso or wrong → switch group
-    if (next === -1) grp.done = true;
-    else grp.letterIdx = next;
     switchGroup();
   }
+}
+
+function showGroupSummary(grp) {
+  stopTimer();
+
+  const corrects = LETTERS.filter(l => grp.states[l] === 'correct');
+  const wrongs   = LETTERS.filter(l => grp.states[l] === 'wrong');
+
+  document.getElementById('summary-title').textContent = `${grp.name} terminó el rosco`;
+  document.getElementById('summary-sub').textContent =
+    `${grp.correct} correcta${grp.correct !== 1 ? 's' : ''} · ${grp.wrong} incorrecta${grp.wrong !== 1 ? 's' : ''} · ${grp.paso} paso${grp.paso !== 1 ? 's' : ''}`;
+
+  let html = '';
+  if (corrects.length) {
+    html += `<div class="summary-section correct"><h4>✓ Correctas (${corrects.length})</h4>`;
+    corrects.forEach(l => {
+      const q = grp.questions[l];
+      html += `<div class="summary-item">
+        <div class="summary-letter c">${l}</div>
+        <div><div class="summary-answer">${q.r}</div><div class="summary-question">${q.p}</div></div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+  if (wrongs.length) {
+    html += `<div class="summary-section wrong"><h4>✗ Incorrectas (${wrongs.length})</h4>`;
+    wrongs.forEach(l => {
+      const q = grp.questions[l];
+      html += `<div class="summary-item">
+        <div class="summary-letter w">${l}</div>
+        <div><div class="summary-answer">${q.r}</div><div class="summary-question">${q.p}</div></div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+  document.getElementById('summary-body').innerHTML = html;
+
+  const othersActive = G.groups.some((g, i) => !g.done);
+  const btn = document.getElementById('summary-continue-btn');
+  if (othersActive) {
+    btn.textContent = 'Continuar con otros grupos ▶';
+    btn.onclick = () => { closeSummary(); switchGroup(); };
+  } else {
+    btn.textContent = 'Ver resultados finales ▶';
+    btn.onclick = () => { closeSummary(); endGame(); };
+  }
+
+  document.getElementById('summary-overlay').style.display = 'flex';
+}
+
+function closeSummary() {
+  document.getElementById('summary-overlay').style.display = 'none';
 }
 
 function switchGroup() {

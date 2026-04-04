@@ -17,6 +17,8 @@ Juego de Pasapalabras con temática bíblica, diseñado para jugar en grupos. Fu
 
 - **Temporizador**: aparece al lado del rosco y cuenta los segundos de cada pregunta. Cambia de azul a naranja a los 15 segundos y a rojo a los 30.
 - **Ver respuesta**: botón destacado en amarillo/naranja para verificar la respuesta fácilmente durante el juego.
+- **Ronda final**: cuando un grupo termina de recorrer todas las letras y solo quedan pasos pendientes, continúa jugando sin ceder el turno. El botón "Paso" desaparece y se muestra el indicador "Ronda final".
+- **Resumen del grupo**: al finalizar el rosco completo, se muestra un modal con todas las respuestas correctas e incorrectas (letra, respuesta y pregunta). Desde ahí se puede continuar con los otros grupos o ir a los resultados finales.
 
 ## Letras incluidas
 
