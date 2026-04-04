@@ -149,6 +149,7 @@ tr.cur-row td{background:#fff8e1;font-weight:700}
     <div class="timer-box" id="timer-box">
       <div class="timer-label">seg</div>
       <div class="timer-num" id="timer-num">0</div>
+      <button id="timer-pause-btn" onclick="toggleTimer()" style="margin-top:8px;background:#e3f2fd;border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;transition:background .2s">⏸</button>
     </div>
   </div>
 
@@ -194,7 +195,7 @@ tr.cur-row td{background:#fff8e1;font-weight:700}
     <div class="summary-sub" id="summary-sub"></div>
     <div id="summary-body"></div>
     <hr class="summary-divider">
-    <button class="btn btn-gold" id="summary-continue-btn"></button>
+    <div id="summary-actions" style="display:flex;flex-direction:column;gap:10px"></div>
   </div>
 </div>
 
@@ -324,20 +325,35 @@ let G = {};
 let peekingGroupIdx = -1; // -1 = not peeking (showing active group)
 let timerInterval = null;
 let timerSeconds = 0;
+let timerPaused = false;
 
 function startTimer() {
   clearInterval(timerInterval);
   timerSeconds = 0;
+  timerPaused = false;
   updateTimerDisplay();
+  updatePauseBtn();
   timerInterval = setInterval(() => {
-    timerSeconds++;
-    updateTimerDisplay();
+    if (!timerPaused) { timerSeconds++; updateTimerDisplay(); }
   }, 1000);
 }
 
 function stopTimer() {
   clearInterval(timerInterval);
   timerInterval = null;
+  timerPaused = false;
+}
+
+function toggleTimer() {
+  timerPaused = !timerPaused;
+  updatePauseBtn();
+}
+
+function updatePauseBtn() {
+  const btn = document.getElementById('timer-pause-btn');
+  if (!btn) return;
+  btn.textContent = timerPaused ? '▶' : '⏸';
+  btn.style.background = timerPaused ? '#fff3e0' : '#e3f2fd';
 }
 
 function updateTimerDisplay() {
@@ -614,14 +630,16 @@ function showGroupSummary(grp) {
   }
   document.getElementById('summary-body').innerHTML = html;
 
-  const othersActive = G.groups.some((g, i) => !g.done);
-  const btn = document.getElementById('summary-continue-btn');
+  const othersActive = G.groups.some(g => !g.done);
+  const actionsEl = document.getElementById('summary-actions');
   if (othersActive) {
-    btn.textContent = 'Continuar con otros grupos ▶';
-    btn.onclick = () => { closeSummary(); switchGroup(); };
+    actionsEl.innerHTML = `
+      <button class="btn btn-gold" onclick="closeSummary();switchGroup()">Continuar con otros grupos ▶</button>
+      <button class="btn btn-gray" onclick="if(confirm('¿Reiniciar el juego?')){closeSummary();reset()}">↩ Reiniciar juego</button>`;
   } else {
-    btn.textContent = 'Ver resultados finales ▶';
-    btn.onclick = () => { closeSummary(); endGame(); };
+    actionsEl.innerHTML = `
+      <button class="btn btn-gold" onclick="closeSummary();endGame()">Ver resultados finales ▶</button>
+      <button class="btn btn-gray" onclick="if(confirm('¿Reiniciar el juego?')){closeSummary();reset()}">↩ Reiniciar juego</button>`;
   }
 
   document.getElementById('summary-overlay').style.display = 'flex';
