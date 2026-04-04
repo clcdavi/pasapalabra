@@ -488,19 +488,10 @@ function render() {
   const q = grp.questions[l];
   const pending = pendingCount(grp);
 
-  const isFinalRound = !hasPendingLetters(grp);
-  const curSubEl = document.getElementById('cur-sub');
-
-  document.getElementById('cur-group-name').innerHTML =
-    grp.name + (isFinalRound ? ' <span class="final-round-badge">Ronda final</span>' : '');
-
-  if (isFinalRound) {
-    curSubEl.textContent = `Ronda final · Letra ${l} · ${pending} paso${pending !== 1 ? 's' : ''} pendiente${pending !== 1 ? 's' : ''}`;
-    curSubEl.style.color = '#ef6c00';
-  } else {
-    curSubEl.textContent = `Letra ${l}  •  ${pending} letra${pending !== 1 ? 's' : ''} pendiente${pending !== 1 ? 's' : ''}`;
-    curSubEl.style.color = '';
-  }
+  document.getElementById('cur-group-name').textContent = grp.name;
+  document.getElementById('cur-sub').textContent =
+    `Letra ${l}  •  ${pending} letra${pending !== 1 ? 's' : ''} pendiente${pending !== 1 ? 's' : ''}`;
+  document.getElementById('cur-sub').style.color = '';
 
   document.getElementById('q-badge').textContent = l;
   document.getElementById('q-text').textContent = q.p;
@@ -511,11 +502,8 @@ function render() {
   document.getElementById('q-card').style.display = '';
   const actionBtns = document.getElementById('action-btns');
   actionBtns.style.display = '';
-  const pasoBtn = actionBtns.querySelector('.btn-orange');
-  if (pasoBtn) {
-    pasoBtn.style.display = isFinalRound ? 'none' : '';
-    actionBtns.style.gridTemplateColumns = isFinalRound ? '1fr 1fr' : '1fr 1fr 1fr';
-  }
+  actionBtns.style.gridTemplateColumns = '1fr 1fr 1fr';
+  actionBtns.querySelector('.btn-orange').style.display = '';
 
   updateRosco(grp, grp.letterIdx);
   updateGroupTabs();
@@ -577,7 +565,6 @@ function answer(type) {
   else if (type === 'paso') { grp.states[l] = 'paso';  grp.paso++; }
   else                      { grp.states[l] = 'wrong'; grp.wrong++; }
 
-  const inFinalRound = !hasPendingLetters(grp);
   const next = findNextLetterIdx(grp);
 
   if (next === -1) {
@@ -588,7 +575,7 @@ function answer(type) {
 
   grp.letterIdx = next;
 
-  if (type === 'correct' || inFinalRound) {
+  if (type === 'correct') {
     render(); // same group continues
   } else {
     switchGroup();
