@@ -46,7 +46,13 @@ input:focus{outline:none;border-color:#B8860B}
 .gtab.inactive-tab{background:#e0e0e0;color:#666}
 .gtab.done-tab{background:#c8e6c9;color:#2e7d32}
 
-.rosco-wrap{position:relative;width:min(320px,88vw);height:min(320px,88vw);margin:0 auto}
+.rosco-row{display:flex;align-items:center;justify-content:center;gap:14px}
+.rosco-wrap{position:relative;width:min(300px,82vw);height:min(300px,82vw);flex-shrink:0}
+.timer-box{display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;border-radius:14px;padding:14px 10px;box-shadow:0 2px 8px rgba(0,0,0,.1);min-width:58px}
+.timer-label{font-size:.65rem;color:#999;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.timer-num{font-size:2.2rem;font-weight:900;color:#1976D2;line-height:1;transition:color .3s}
+.timer-num.warn{color:#ef6c00}
+.timer-num.danger{color:#e53935}
 .rl{position:absolute;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.72rem;transform:translate(-50%,-50%);transition:background .3s,box-shadow .3s;border:2px solid transparent}
 .rl.pending{background:#e0e0e0;color:#777}
 .rl.current{background:#1976D2;color:#fff;border-color:#0d47a1;box-shadow:0 0 0 4px rgba(25,118,210,.35);animation:pulse 1.1s ease-in-out infinite}
@@ -59,7 +65,8 @@ input:focus{outline:none;border-color:#B8860B}
 .q-top{display:flex;align-items:center;gap:12px;margin-bottom:8px}
 .q-badge{width:44px;height:44px;border-radius:50%;background:#e3f2fd;color:#1976D2;font-size:1.4rem;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .q-text{font-size:1rem;color:#222;line-height:1.45;flex:1}
-.reveal-btn{font-size:.8rem;color:#aaa;cursor:pointer;text-align:right;text-decoration:underline;margin-top:4px}
+.reveal-btn{display:block;width:100%;padding:10px;margin-top:10px;border:2px solid #ffcc80;border-radius:10px;background:#fff8e1;color:#e65100;font-size:.95rem;font-weight:700;cursor:pointer;text-align:center;transition:background .2s,border-color .2s}
+.reveal-btn:hover{background:#ffe0b2;border-color:#ffa726}
 .reveal-ans{display:none;font-weight:800;color:#43a047;font-size:1rem;margin-top:6px;text-align:center;padding:6px;background:#f1f8e9;border-radius:8px}
 .reveal-ans.on{display:block}
 
@@ -116,14 +123,20 @@ tr.cur-row td{background:#fff8e1;font-weight:700}
     <div class="turn-sub" id="cur-sub">—</div>
   </div>
 
-  <div class="rosco-wrap" id="rosco"></div>
+  <div class="rosco-row">
+    <div class="rosco-wrap" id="rosco"></div>
+    <div class="timer-box" id="timer-box">
+      <div class="timer-label">seg</div>
+      <div class="timer-num" id="timer-num">0</div>
+    </div>
+  </div>
 
   <div class="q-card" id="q-card">
     <div class="q-top">
       <div class="q-badge" id="q-badge">A</div>
       <div class="q-text" id="q-text">—</div>
     </div>
-    <div class="reveal-btn" onclick="toggleAns()">Ver respuesta ▼</div>
+    <button class="reveal-btn" onclick="toggleAns()">👁 Ver respuesta</button>
     <div class="reveal-ans" id="reveal-ans">—</div>
   </div>
 
@@ -277,6 +290,30 @@ const LETTERS = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P'
 // ══════════════════════════════════════════
 let G = {};
 let peekingGroupIdx = -1; // -1 = not peeking (showing active group)
+let timerInterval = null;
+let timerSeconds = 0;
+
+function startTimer() {
+  clearInterval(timerInterval);
+  timerSeconds = 0;
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    timerSeconds++;
+    updateTimerDisplay();
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+}
+
+function updateTimerDisplay() {
+  const el = document.getElementById('timer-num');
+  if (!el) return;
+  el.textContent = timerSeconds;
+  el.className = 'timer-num' + (timerSeconds >= 30 ? ' danger' : timerSeconds >= 15 ? ' warn' : '');
+}
 
 function shuffle(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
@@ -415,6 +452,7 @@ function render() {
   updateRosco(grp, grp.letterIdx);
   updateGroupTabs();
   updateScoreTable();
+  startTimer();
 }
 
 function renderPeek(gIdx) {
@@ -543,6 +581,7 @@ function endGame() {
     </div>`
   ).join('');
 
+  stopTimer();
   showScreen('end-screen');
 }
 

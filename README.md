@@ -13,6 +13,11 @@ Juego de Pasapalabras con temática bíblica, diseñado para jugar en grupos. Fu
 4. Las letras en paso vuelven a aparecer cuando el grupo completa la vuelta
 5. Gana el grupo con más respuestas correctas al finalizar todos los roscos
 
+## Interfaz
+
+- **Temporizador**: aparece al lado del rosco y cuenta los segundos de cada pregunta. Cambia de azul a naranja a los 15 segundos y a rojo a los 30.
+- **Ver respuesta**: botón destacado en amarillo/naranja para verificar la respuesta fácilmente durante el juego.
+
 ## Letras incluidas
 
 22 letras: A B C D E F G H I J K L M N O P R S T U V Z
