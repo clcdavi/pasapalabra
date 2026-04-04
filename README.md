@@ -4,7 +4,7 @@ Juego de Pasapalabras con temática bíblica, diseñado para jugar en grupos. Fu
 
 ## Cómo jugar
 
-1. Ingresá la cantidad de grupos (2 a 8) y sus nombres
+1. Ingresá la cantidad de grupos (1 a 8) y sus nombres
 2. Cada grupo tiene su propio rosco con preguntas diferentes
 3. El grupo activo responde su letra actual:
    - **✓ Correcto** → suma un punto y sigue con la siguiente letra
